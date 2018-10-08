@@ -1,13 +1,20 @@
 import scrapy
+from scrapy.spiders import CrawlSpider, Rule
+from scrapy.linkextractors import LinkExtractor
 from csfd.items import CsfdItem
 
-class CsfdSpider(scrapy.Spider):
+
+class CsfdSpider(CrawlSpider):
     name = 'csfd'
 
     # start_urls = ['http://www.csfd.cz/filmy-online/']
     start_urls = ['https://www.csfd.cz/zebricky/nejlepsi-filmy/?show=complete']
+    allowed_domains = ['csfd.cz']
+    rules = (
+        Rule(LinkExtractor(allow=r'/film/.*/$',), callback='parse_page'),
+    )
 
-    def parse(self, response):
+    def parse_page(self, response):
 
         for top_movie in response.css('td.film a::attr(href)'):
             yield response.follow(top_movie, self.parse_movie)
