@@ -10,5 +10,11 @@ import scrapy
 
 class CsfdItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+
+    movie = scrapy.Field()
+    genre = scrapy.Field()
+    origin = scrapy.Field()
+    year = scrapy.Field()
+    length = scrapy.Field()
+    rating = scrapy.Field()
+    director = scrapy.Field()
