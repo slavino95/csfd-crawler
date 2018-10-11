@@ -37,5 +37,6 @@ class CsfdSpider(CrawlSpider):
         movie['director'] = extract_with_css('span[itemprop="director"] a::text')
         movie['image'] = extract_with_css('img.film-poster::attr(src)')
         movie['tags'] = response.css('div.tags a::text').extract()
+        movie['plot'] = response.xpath('//*[@id="plots"]/div[2]/ul/li[1]/div[1]/text()[2]').extract_first().strip()
 
         yield movie
