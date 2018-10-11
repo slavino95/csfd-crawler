@@ -18,3 +18,5 @@ class CsfdItem(scrapy.Item):
     length = scrapy.Field()
     rating = scrapy.Field()
     director = scrapy.Field()
+    image = scrapy.Field()
+    tags = scrapy.Field()
