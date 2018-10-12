@@ -7,13 +7,19 @@ from csfd.items import CsfdItem
 class CsfdSpider(CrawlSpider):
     name = 'csfd'
 
-    #start_urls = ['http://www.csfd.cz/filmy-online/']
-
     start_urls = ['https://www.csfd.cz/zebricky/nejlepsi-filmy/?show=complete',
                   'https://www.csfd.cz/zebricky/nejoblibenejsi-filmy/?show=complete',
                   'https://www.csfd.cz/zebricky/nejrozporuplnejsi-filmy/?show=complete',
                   'https://www.csfd.cz/zebricky/nejhorsi-filmy/?show=complete',
                   'http://www.csfd.cz/filmy-online/']
+
+    """
+    Generating search filters by changing genre number, which is in range 1 - 23 
+    """
+    for i in range(1, 23):
+        start_urls.append('https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin=&genre=' + str(i) + '&year_from=&year_to=&actor=&director=&ok=Zobrazit&_form_=charts&show=complete')
+
+    print(start_urls)
 
     allowed_domains = ['csfd.cz']
     rules = (
@@ -47,6 +53,7 @@ class CsfdSpider(CrawlSpider):
         movie['director'] = extract_with_css('span[itemprop="director"] a::text')
         movie['image'] = extract_with_css('img.film-poster::attr(src)')
         movie['tags'] = response.css('div.tags a::text').extract()
+        # potrebujem strip()?
         movie['plot'] = response.xpath('//*[@id="plots"]/div[2]/ul/li[1]/div[1]/text()[2]').extract_first().strip()
         movie['actors'] = response.xpath('//*[@class="creators"]/div[6]/span[1]/a/text()').extract()[:5]
 
