@@ -7,17 +7,24 @@ from csfd.items import CsfdItem
 class CsfdSpider(CrawlSpider):
     name = 'csfd'
 
-    # start_urls = ['http://www.csfd.cz/filmy-online/']
+    #start_urls = ['http://www.csfd.cz/filmy-online/']
+
     start_urls = ['https://www.csfd.cz/zebricky/nejlepsi-filmy/?show=complete',
                   'https://www.csfd.cz/zebricky/nejoblibenejsi-filmy/?show=complete',
                   'https://www.csfd.cz/zebricky/nejrozporuplnejsi-filmy/?show=complete',
-                  'https://www.csfd.cz/zebricky/nejhorsi-filmy/?show=complete']
+                  'https://www.csfd.cz/zebricky/nejhorsi-filmy/?show=complete',
+                  'http://www.csfd.cz/filmy-online/']
+
     allowed_domains = ['csfd.cz']
     rules = (
         Rule(LinkExtractor(allow=r'/film/([^/]+)/$',), callback='parse_movie', follow=True),
+        Rule(LinkExtractor(allow=r'/filmy-online/([^/]+)/$',), callback='parse_page', follow=True),
     )
 
     def parse_page(self, response):
+
+        for href in response.css('a.next::attr(href)').extract():
+            yield response.follow(href, self.parse)
 
         """for top_movie in response.css('td.film a::attr(href)'):
             yield response.follow(top_movie, self.parse_movie)
@@ -25,6 +32,7 @@ class CsfdSpider(CrawlSpider):
         for common in response.css('a.c1::attr(href)'):
             yield response.follow(common, self.parse_movie)
         """
+
     def parse_movie(self, response):
         def extract_with_css(query):
             return response.css(query).extract_first().strip()
@@ -41,5 +49,14 @@ class CsfdSpider(CrawlSpider):
         movie['tags'] = response.css('div.tags a::text').extract()
         movie['plot'] = response.xpath('//*[@id="plots"]/div[2]/ul/li[1]/div[1]/text()[2]').extract_first().strip()
         movie['actors'] = response.xpath('//*[@class="creators"]/div[6]/span[1]/a/text()').extract()[:5]
+
+        """
+        Actors div doesn't have class or id and it's position may vary.
+        Extracting only first five actors from list.
+        """
+        if not movie['actors']:
+            movie['actors'] = response.xpath('//*[@class="creators"]/div[5]/span[1]/a/text()').extract()[:5]
+            if not movie['actors']:
+                movie['actors'] = response.xpath('//*[@class="creators"]/div[4]/span[1]/a/text()').extract()[:5]
 
         yield movie
