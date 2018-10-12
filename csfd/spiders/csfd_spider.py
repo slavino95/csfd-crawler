@@ -9,7 +9,9 @@ class CsfdSpider(CrawlSpider):
 
     # start_urls = ['http://www.csfd.cz/filmy-online/']
     start_urls = ['https://www.csfd.cz/zebricky/nejlepsi-filmy/?show=complete',
-                  'https://www.csfd.cz/zebricky/nejoblibenejsi-filmy/?show=complete']
+                  'https://www.csfd.cz/zebricky/nejoblibenejsi-filmy/?show=complete',
+                  'https://www.csfd.cz/zebricky/nejrozporuplnejsi-filmy/?show=complete',
+                  'https://www.csfd.cz/zebricky/nejhorsi-filmy/?show=complete']
     allowed_domains = ['csfd.cz']
     rules = (
         Rule(LinkExtractor(allow=r'/film/([^/]+)/$',), callback='parse_movie', follow=True),
@@ -38,5 +40,6 @@ class CsfdSpider(CrawlSpider):
         movie['image'] = extract_with_css('img.film-poster::attr(src)')
         movie['tags'] = response.css('div.tags a::text').extract()
         movie['plot'] = response.xpath('//*[@id="plots"]/div[2]/ul/li[1]/div[1]/text()[2]').extract_first().strip()
+        movie['actors'] = response.xpath('//*[@class="creators"]/div[6]/span[1]/a/text()').extract()[:5]
 
         yield movie

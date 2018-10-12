@@ -20,3 +20,5 @@ class CsfdItem(scrapy.Item):
     director = scrapy.Field()
     image = scrapy.Field()
     tags = scrapy.Field()
+    plot = scrapy.Field()
+    actors = scrapy.Field()
