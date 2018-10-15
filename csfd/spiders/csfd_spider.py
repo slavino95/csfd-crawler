@@ -19,8 +19,6 @@ class CsfdSpider(CrawlSpider):
     for i in range(1, 23):
         start_urls.append('https://www.csfd.cz/zebricky/specificky-vyber/?type=0&origin=&genre=' + str(i) + '&year_from=&year_to=&actor=&director=&ok=Zobrazit&_form_=charts&show=complete')
 
-    print(start_urls)
-
     allowed_domains = ['csfd.cz']
     rules = (
         Rule(LinkExtractor(allow=r'/film/([^/]+)/$',), callback='parse_movie', follow=True),
@@ -48,17 +46,16 @@ class CsfdSpider(CrawlSpider):
         movie['genre'] = response.css('p.genre::text').extract_first().split(' / ')
         movie['origin'] = response.css('p.origin::text').extract_first().split(',')[0].split(' / ')
         movie['year'] = extract_with_css('span[itemprop="dateCreated"]::text')
-        movie['length'] = response.css('p.origin::text').extract()[1].split(' ')[1]
+        movie['length'] = response.css('p.origin::text').extract()[1]
         movie['rating'] = extract_with_css('h2.average::text').split('%')[0]
         movie['director'] = extract_with_css('span[itemprop="director"] a::text')
         movie['image'] = extract_with_css('img.film-poster::attr(src)')
         movie['tags'] = response.css('div.tags a::text').extract()
-        # potrebujem strip()?
         movie['plot'] = response.xpath('//*[@id="plots"]/div[2]/ul/li[1]/div[1]/text()[2]').extract_first().strip()
         movie['actors'] = response.xpath('//*[@class="creators"]/div[6]/span[1]/a/text()').extract()[:5]
 
         """
-        Actors div doesn't have class or id and it's position may vary.
+        Actors <div> doesn't have class or id and it's position may vary.
         Extracting only first five actors from list.
         """
         if not movie['actors']:
@@ -66,4 +63,6 @@ class CsfdSpider(CrawlSpider):
             if not movie['actors']:
                 movie['actors'] = response.xpath('//*[@class="creators"]/div[4]/span[1]/a/text()').extract()[:5]
 
-        yield movie
+        if 'x' not in movie['length'] and '-' not in movie['length'] and '–' not in movie['length']:
+            movie['length'] = movie['length'].split(' ')[1]
+            yield movie
